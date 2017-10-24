@@ -62,7 +62,7 @@ class HMM():
     
     def viterbi(self, ob):
         M = np.zeros((self.T.shape[1], len(ob)))
-        B = np.zeros((self.T.shape[1], len(ob)))
+        B = np.zeros((self.T.shape[1], len(ob)))       # this is the backtrace matrix, each cell records the best previous state
         M[:, 0] = self.Pi[:-1] * self.E[self.O[ob[0]]]
         for t in range(1, len(ob)):                    # for each t, for each state, choose the biggest from all prev-state * transition * ob, remember the best prev
             for s in range(self.T.shape[1]):
