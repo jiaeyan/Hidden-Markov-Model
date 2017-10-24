@@ -39,7 +39,8 @@ class HMM():
         return self.normalize(data, T, E, Pi)
     
     def normalize(self, data, T, E, Pi):
-        S = np.array([E[:, col].sum() - len(E) for col in range(E.shape[1])]) # subtract all added 1 ob 
+        '''Convert integers in matrices to probabilities.'''
+        S = np.array([E[:, col].sum() - len(E) for col in range(E.shape[1])]) # frequences of all states, need to subtract all added 1 ob 
         T = T / (S + len(T))             # denominator = s1_unicount + s_type (include end_state)
         E = E / (S + len(E))
         Pi = Pi / (len(data) + len(Pi))  # START_count = len(data), also assume <START><END> instance
