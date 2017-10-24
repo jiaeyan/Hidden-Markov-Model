@@ -45,25 +45,6 @@ class HMM():
         Pi = Pi / (len(data) + len(Pi))  # START_count = len(data), also assume <START><END> instance
         return T, E, Pi
         
-    def test(self, data):
-        correct_num = 0.0
-        token_num = 0.0
-        for seq in data:
-            token_num += len(seq)
-            true = [s for ob, s in seq]
-            ob = self.checkUNK([ob for ob, s in seq])
-            predict = self.viterbi(ob)
-            for i in range(len(seq)):
-                if true[i] == predict[i]: correct_num += 1
-        print ('\nAccuracy: ' + str(correct_num / token_num)) 
-
-    def checkUNK(self, ob):
-        '''Check OOVs to make them unk.'''
-        for i in range(len(ob)):
-            if self.O.get(ob[i], False) == False:
-                ob[i] = '<unk>'
-        return ob
-    
     def forward(self, ob):
         M = np.zeros((self.T.shape[1], len(ob)))
         M[:, 0] = self.Pi[:-1] * self.E[self.O[ob[0]]] # initialize all states from Pi
@@ -92,3 +73,23 @@ class HMM():
         for t in range(len(ob) - 2, -1, -1):
             M[:, t] = [sum(M[:, t + 1] * self.T[:, s][:-1] * self.E[self.O[ob[t + 1]]]) for s in range(self.T.shape[1])]
         return sum(M[:, 0] * self.Pi[:-1] * self.E[self.O[ob[0]]])
+    
+    def test(self, data):
+        correct_num = 0.0
+        token_num = 0.0
+        for seq in data:
+            token_num += len(seq)
+            true = [s for ob, s in seq]
+            ob = self.checkUNK([ob for ob, s in seq])
+            predict = self.viterbi(ob)
+            for i in range(len(seq)):
+                if true[i] == predict[i]: correct_num += 1
+        print ('\nAccuracy: ' + str(correct_num / token_num)) 
+
+    def checkUNK(self, ob):
+        '''Check OOVs to make them unk.'''
+        for i in range(len(ob)):
+            if self.O.get(ob[i], False) == False:
+                ob[i] = '<unk>'
+        return ob
+  
