@@ -7,7 +7,7 @@ import numpy as np
 class HMM():
     
     def train(self, data):          # data format: [[(ob1, s1), (ob2, s2), ...], [],...]
-        '''Get the observation type and state type to decide the shapes of matrices.'''
+        '''Get the observation type and state type to decide the shapes of neccesary matrices.'''
         O, S = {'<unk>'}, {'<UNK>'} # O: observation set; S: state set; UNK: handle unseen data
         for seq in data:
             for ob, s in seq:
