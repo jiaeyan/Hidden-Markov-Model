@@ -52,6 +52,13 @@ class HMM():
             M[:, t] = [np.dot(M[:, t - 1], self.T[s]) * self.E[self.O[ob[t]]][s] for s in range(self.T.shape[1])]
         return np.dot(M[:, -1], self.T[-1])
     
+    def backward(self, ob):
+        M = np.zeros((self.T.shape[1], len(ob)))
+        M[:, -1] = self.T[-1]
+        for t in range(len(ob) - 2, -1, -1):
+            M[:, t] = [sum(M[:, t + 1] * self.T[:, s][:-1] * self.E[self.O[ob[t + 1]]]) for s in range(self.T.shape[1])]
+        return sum(M[:, 0] * self.Pi[:-1] * self.E[self.O[ob[0]]])
+    
     def viterbi(self, ob):
         M = np.zeros((self.T.shape[1], len(ob)))
         B = np.zeros((self.T.shape[1], len(ob)))
@@ -66,13 +73,6 @@ class HMM():
         if t == -1: return path
         path.insert(0, self.S[best])
         return self.backtrace(path, int(B[best][t]), B, t - 1)
-    
-    def backward(self, ob):
-        M = np.zeros((self.T.shape[1], len(ob)))
-        M[:, -1] = self.T[-1]
-        for t in range(len(ob) - 2, -1, -1):
-            M[:, t] = [sum(M[:, t + 1] * self.T[:, s][:-1] * self.E[self.O[ob[t + 1]]]) for s in range(self.T.shape[1])]
-        return sum(M[:, 0] * self.Pi[:-1] * self.E[self.O[ob[0]]])
     
     def test(self, data):
         correct_num = 0.0
