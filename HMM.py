@@ -14,7 +14,7 @@ class HMM():
                 O.add(ob)
                 S.add(s)
         self.O = {ob:i for i, ob in enumerate(O)} # a dict to record observation and its id
-        self.S = {"END":len(S), len(S)]:"END"}    # since all states transit to end state, it should be included
+        self.S = {"END":len(S), len(S):"END"}    # since all states transit to end state, it should be included; len(S) ensures its id is at the last
         for i, s in enumerate(S):                 # a two-way dict to record state and its id
             self.S[i] = s
             self.S[s] = i
