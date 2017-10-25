@@ -14,12 +14,10 @@ class HMM():
                 O.add(ob)
                 S.add(s)
         self.O = {ob:i for i, ob in enumerate(O)} # a dict to record observation and its id
-        self.S = {}
+        self.S = {"END":len(S), len(S)]:"END"}.   # since all states transit to end state, it should be included
         for i, s in enumerate(S):                 # a two-way dict to record state and its id
             self.S[i] = s
             self.S[s] = i
-        self.S["END"] = len(S)                    # since all states transit to end state, it should be included
-        self.S[len(S)] = "END"
         self.T, self.E, self.Pi = self.count(data, np.zeros((len(S) + 1, (len(S)))) + 1, np.zeros((len(O), len(S))) + 1, np.zeros(len(S) + 1) + 1)
     
     def count(self, data, T, E, Pi):
