@@ -6,6 +6,15 @@ import numpy as np
 
 class HMM():
     
+    def __init__(self, S, O, T, E, Pi, obs): # this constructor is for EM algorithm
+        self.S = S                           # O: observation set, two-way; S: state set, two-way; UNK: handle unseen data
+        self.O = O
+        self.T = T                           # transition and emission table
+        self.E = E
+        self.Pi = Pi                         # prior table
+        self.obs = obs                       # given observations
+        self.s = [k for k in S if type(k) is str and k != "END"] # pure state set from S
+    
     def train(self, data):          # data format: [[(ob1, s1), (ob2, s2), ...], [],...]
         '''Get the observation type and state type to decide the shapes of neccesary matrices.'''
         O, S = {'<unk>'}, {'<UNK>'} # O: observation set; S: state set; UNK: handle unseen data
@@ -14,7 +23,7 @@ class HMM():
                 O.add(ob)
                 S.add(s)
         self.O = {ob:i for i, ob in enumerate(O)} # a dict to record observation and its id
-        self.S = {"END":len(S), len(S):"END"}    # since all states transit to end state, it should be included; len(S) ensures its id is at the last
+        self.S = {"END":len(S), len(S):"END"}     # since all states transit to end state, it should be included; len(S) ensures its id is at the last
         for i, s in enumerate(S):                 # a two-way dict to record state and its id
             self.S[i] = s
             self.S[s] = i
@@ -91,4 +100,39 @@ class HMM():
             if self.O.get(ob[i], False) == False:
                 ob[i] = '<unk>'
         return ob
+    
+    def expectation(self):                # E-step of EM algorithm
+        neo_T = np.zeros(self.T.shape)    # these tables are to update the last iteration parameters
+        neo_E = np.zeros(self.E.shape)
+        neo_Pi = np.zeros(self.Pi.shape)
+        for ob in obs:
+            s_combs = [list(comb) for comb in product(self.s, repeat = len(ob))]
+            ob_lh = sum([self.likelihood(ob, comb) for comb in s_combs])
+            for comb in s_combs:
+                posterior = self.likelihood(ob, comb) / ob_lh
+                self.count(ob, comb, neo_T, neo_E, neo_Pi, posterior)
+        return neo_T, neo_E, neo_Pi
+    
+    def count(self, ob, s_seq, T, E, Pi, posterior): # fill the tables by conuting
+        Pi[self.S[s_seq[0]]] += posterior
+        s_seq.append("END")
+        for i in range(len(s_seq)-1):
+            o1, s1, s2 = ob[i], s_seq[i], s_seq[i+1]
+            T[self.S[s2]][self.S[s1]] += posterior
+            E[self.O[o1]][self.S[s1]] += posterior         
+    
+    def maximization(self, neo_T, neo_E, neo_Pi):    # M-step of EM algorithm
+        for col in range(neo_T.shape[1]): neo_T[:, col] = neo_T[:, col]/ neo_T[:, col].sum() 
+        for col in range(neo_E.shape[1]): neo_E[:, col] = neo_E[:, col]/ neo_E[:, col].sum()
+        neo_Pi = neo_Pi/neo_Pi.sum()
+        return neo_T, neo_E, neo_Pi
+    
+    def converge(self): # set the condition of convergence
+        while True:
+            print("Transition: \n", self.T)
+            print("Emission: \n", self.E)
+            print("Initial: \n", self.Pi)
+            self.T, self.E, self.Pi = self.max(*self.exp())
+            for ob in self.obs: print(ob, ":", self.viterbi(ob))
+            print()
   
