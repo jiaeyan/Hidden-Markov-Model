@@ -14,7 +14,7 @@ class HMM():
                 O.add(ob)
                 S.add(s)
         self.O = {ob:i for i, ob in enumerate(O)} # a dict to record observation and its id
-        self.S = {"END":len(S), len(S):"END"}     # since all states transit to end state, it should be included; len(S) ensures its id is at the last
+        self.S = {"<END>":len(S), len(S):"<END>"}     # since all states transit to end state, it should be included; len(S) ensures its id is at the last, and we want to make sure it is always at the last of the table for computation convenience
         for i, s in enumerate(S):                 # a two-way dict to record state and its id
             self.S[i] = s
             self.S[s] = i
@@ -29,7 +29,7 @@ class HMM():
         for seq in data:
             Pi[self.S[seq[0][1]]] += 1                     # start transition
             E[self.O[seq[-1][0]]][self.S[seq[-1][1]]] += 1 # for the last s, record emission count
-            T[self.S["END"]][self.S[seq[-1][1]]] += 1      # and to-end-transition count
+            T[self.S["<END>"]][self.S[seq[-1][1]]] += 1      # and to-end-transition count
             for i in range(len(seq) - 1):
                 ob1, s1, s2 = seq[i][0], seq[i][1], seq[i+1][1]
                 T[self.S[s2]][self.S[s1]] += 1
