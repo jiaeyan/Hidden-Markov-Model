@@ -18,7 +18,7 @@ class HMM():
         for i, s in enumerate(S):                 # a two-way dict to record state and its id
             self.S[i] = s
             self.S[s] = i
-        self.T, self.E, self.Pi = self.count(data, np.zeros((len(S) + 1, (len(S)))) + 1, np.zeros((len(O), len(S))) + 1, np.zeros(len(S) + 1) + 1)
+        self.T, self.E, self.Pi = self.count(data, np.ones((len(S)+1, (len(S)))), np.ones((len(O), len(S))), np.ones(len(S)+1))
     
     def count(self, data, T, E, Pi):
         '''Fill in the matrices and normalize.
