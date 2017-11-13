@@ -16,6 +16,19 @@ class HMM():
         self.E = E / (S - self.N - 1 + self.M)
         self.P = P / P.sum()
     
+    def count(self, data):
+        T, E, P = self.formulate(data)
+        for seq in data:
+            ob, lb = seq.features, seq.labels
+            P[self.S[lb[0]]] += 1                      # start transition
+            E[self.O[ob[-1]], self.S[lb[-1]]] += 1     # for the last s, record emission count
+            T[self.S["<END>"], self.S[lb[-1]]] += 1    # and end-transition count
+            for i in range(len(ob) - 1):
+                o1, s1, s2 = ob[i], lb[i], lb[i+1]
+                T[self.S[s2], self.S[s1]] += 1
+                E[self.O[o1], self.S[s1]] += 1
+        return T, E, P
+    
     def formulate(self, data, supervised = True, S_set = set(), O_set = {'<unk>'}):          # data format: [[(ob1, s1), (ob2, s2), ...], [],...]
         print('formulating...')
         for seq in data:            # O_set: observation set; S_set: state set;
@@ -29,19 +42,6 @@ class HMM():
             self.S[i] = s
             self.S[s] = i
         return zeros((self.N+1, self.N)) + 1, zeros((self.M, self.N)) + 1, zeros(self.N) + 1
-    
-    def count(self, data):
-        T, E, P = self.formulate(data)
-        for seq in data:
-            ob, lb = seq.features, seq.labels
-            P[self.S[lb[0]]] += 1                      # start transition
-            E[self.O[ob[-1]], self.S[lb[-1]]] += 1     # for the last s, record emission count
-            T[self.S["<END>"], self.S[lb[-1]]] += 1    # and end-transition count
-            for i in range(len(ob) - 1):
-                o1, s1, s2 = ob[i], lb[i], lb[i+1]
-                T[self.S[s2], self.S[s1]] += 1
-                E[self.O[o1], self.S[s1]] += 1
-        return T, E, P
     
     def forward(self, ob, T):
         F = zeros((self.N, T))
