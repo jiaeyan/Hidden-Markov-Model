@@ -117,7 +117,7 @@ class HMM():
     def initialize(self, T, E, P):
         '''Initialize parameter tables with uniform distribution probabilities.'''
         for col in range(self.N):
-            arrT = uniform(1, 10, self.N)
+            arrT = uniform(1, 10, self.N+1)
             arrE = uniform(1, 10, self.M)
             T[:, col] = arrT/arrT.sum()
             E[:, col] = arrE/arrE.sum()
