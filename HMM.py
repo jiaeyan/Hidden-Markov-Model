@@ -1,4 +1,4 @@
-from numpy import array, dot, zeros, log
+from numpy import array, dot, zeros, log, sum
 from numpy.random import uniform
 
 class HMM():
