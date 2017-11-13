@@ -1,5 +1,5 @@
 # Hidden_Markov_Model
-An implementation of generic HMM with Numpy matrices, Viterbi, Forward, Backward and EM algorithms involved.
+An implementation of generic HMM with Numpy matrices, Viterbi, Forward, Backward, EM algorithms and Baum-Welch (forward-backward) algorithm involved.
 
 All matrices useed are shaped as below (Initial matrix, Transition matrix, Emission matrix):
 
