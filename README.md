@@ -4,16 +4,16 @@ An implementation of generic HMM with Numpy matrices, Viterbi, Forward, Backward
 All matrices useed are shaped as below (Initial matrix, Transition matrix, Emission matrix):
 
 
-         Pi: s1, s2, s3, ...       
+         P: s1, s2, s3, ...    --> prior table   
 
-         T:    s1, s2, s3, ...
+         T:    s1, s2, s3, ... --> transiton table
              s1
              s2
              s3
              END
             ...
             
-         E:   s1, s2, s3, ...          
+         E:   s1, s2, s3, ...  --> emission table        
            o1
            o2
            o3
