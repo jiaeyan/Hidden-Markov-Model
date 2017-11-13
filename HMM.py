@@ -16,7 +16,7 @@ class HMM():
         self.E = E / (S - self.N - 1 + self.M)
         self.P = P / P.sum()
     
-    def formulate(self, data, supervised = True, S_set = set(), O_set = {'<unk>'}): # data format: [[(ob1, s1), (ob2, s2), ...], [],...]
+    def formulate(self, data, supervised = True, S_set = set(), O_set = {'<unk>'}):
         print('formulating...')
         for seq in data:                                   # O_set: observation set; S_set: state set;
             O_set.update(seq.features)
