@@ -9,7 +9,6 @@ class HMM():
            E: Emission matrix
            P: Prior matrix
         '''
-        print('begin train...')
         T, E, P = self.count(data)
         S = array([T[:, col].sum() for col in range(self.N)]) # a vector recording the number of each state 
         self.T = T / S                                        # denominator = s1_unicount + s_type (include end_state)
@@ -29,9 +28,8 @@ class HMM():
                 E[self.O[o1], self.S[s1]] += 1
         return T, E, P
     
-    def formulate(self, data, supervised = True, S_set = set(), O_set = {'<unk>'}):          # data format: [[(ob1, s1), (ob2, s2), ...], [],...]
-        print('formulating...')
-        for seq in data:            # O_set: observation set; S_set: state set;
+    def formulate(self, data, supervised = True, S_set = set(), O_set = {'<unk>'}):
+        for seq in data:                                   # O_set: observation set; S_set: state set;
             O_set.update(seq.features)
             if supervised:
                 S_set.update(seq.labels)
@@ -45,16 +43,16 @@ class HMM():
     
     def forward(self, ob, T):
         F = zeros((self.N, T))
-        F[:, 0] = self.P * self.E[ob[0]] # initialize all states from Pi
-        for t in range(1, T):            # for each t, for each state, sum(all prev-state * transition * ob)
+        F[:, 0] = self.P * self.E[ob[0]]    # initialize all states from Pi
+        for t in range(1, T):               # for each t, for each state, sum(all prev-state * transition * ob)
             F[:, t] = [dot(F[:, t-1], self.T[s]) * self.E[ob[t], s] for s in range(self.N)]
-        return F                         # return dot(F[:, -1], self.T[-1])
+        return F                            # return dot(F[:, -1], self.T[-1])
     
     def viterbi(self, ob, T):
         V = zeros((self.N, T))
         B = zeros((self.N, T))
         V[:, 0] = self.P * self.E[ob[0]]
-        for t in range(1, T): # for each t, for each state, choose the biggest from all prev-state * transition * ob, remember the best prev
+        for t in range(1, T):               # for each t, for each state, choose the biggest from all prev-state * transition * ob, remember the best prev
             for s in range(self.N):
                 V[s, t], B[s, t] = max([(p, s) for s, p in enumerate(V[:, t-1] * self.T[s] * self.E[ob[t], s])])
         return V, B
@@ -68,10 +66,10 @@ class HMM():
     
     def backward(self, ob, T):
         B = zeros((self.N, T))
-        B[:, -1] = self.T[-1] # np.ones(self.T.shape[1])
+        B[:, -1] = self.T[-1]               # np.ones(self.T.shape[1])
         for t in range(T - 2, -1, -1):
             B[:, t] = [sum(B[:, t+1] * self.T[:, s][:-1] * self.E[ob[t+1]]) for s in range(self.N)]
-        return B              # return sum(B[:, 0] * self.P * self.E[ob[0]])
+        return B                            # return sum(B[:, 0] * self.P * self.E[ob[0]])
     
     def checkOb(self, seq):
         '''Handle unk, >> also convert feature to id.'''
