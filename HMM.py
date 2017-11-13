@@ -16,9 +16,9 @@ class HMM():
         self.E = E / (S - self.N - 1 + self.M)
         self.P = P / P.sum()
     
-    def formulate(self, data, supervised = True, S_set = set(), O_set = {'<unk>'}):
+    def formulate(self, data, supervised = True, S_set = set(), O_set = {'<unk>'}):          # data format: [[(ob1, s1), (ob2, s2), ...], [],...]
         print('formulating...')
-        for seq in data:                                   # O_set: observation set; S_set: state set;
+        for seq in data:            # O_set: observation set; S_set: state set;
             O_set.update(seq.features)
             if supervised:
                 S_set.update(seq.labels)
@@ -41,29 +41,7 @@ class HMM():
                 o1, s1, s2 = ob[i], lb[i], lb[i+1]
                 T[self.S[s2], self.S[s1]] += 1
                 E[self.O[o1], self.S[s1]] += 1
-        return T, E, P 
-    
-    def checkOb(self, seq):
-        '''Handle unk, >> also convert feature to id.'''
-        ob = []
-        for o in seq.features:
-            if o in self.O: ob.append(self.O[o])
-            else: ob.append(self.O['<unk>'])
-        return ob, len(ob)
-    
-    def classify(self, seq):
-        ob, T = self.checkOb(seq)
-        V, B = self.viterbi(ob, T)
-        best = max([(p, s) for s, p in enumerate(V[:, -1] * self.T[-1])])[1]
-        return self.backtrace([], best, B, T - 1)
-    
-    def data_likelihood(self, data):
-        return sum([self.ob_likelihood(seq) for seq in data])
-    
-    def ob_likelihood(self, seq):
-        ob, T = self.checkOb(seq)
-        F = self.forward(ob, T)
-        return dot(F[:, -1], self.T[-1])
+        return T, E, P
     
     def forward(self, ob, T):
         F = zeros((self.N, T))
@@ -94,9 +72,34 @@ class HMM():
         for t in range(T - 2, -1, -1):
             B[:, t] = [sum(B[:, t+1] * self.T[:, s][:-1] * self.E[ob[t+1]]) for s in range(self.N)]
         return B              # return sum(B[:, 0] * self.P * self.E[ob[0]])
+    
+    def checkOb(self, seq):
+        '''Handle unk, >> also convert feature to id.'''
+        ob = []
+        for o in seq.features:
+            if o in self.O: ob.append(self.O[o])
+            else: ob.append(self.O['<unk>'])
+        return ob, len(ob)
+    
+    def likelihood(self, seq):
+        '''Likelihood: compute the observation probability.'''
+        ob, T = self.checkOb(seq)
+        F = self.forward(ob, T)
+        return dot(F[:, -1], self.T[-1])
+    
+    def data_likelihood(self, data):
+        '''Compute the likelihood of the entire data.'''
+        return sum([self.likelihood(seq) for seq in data])
+    
+    def classify(self, seq):
+        '''Decoding: predict the state sequence of given observation sequence.'''
+        ob, T = self.checkOb(seq)
+        V, B = self.viterbi(ob, T)
+        best = max([(p, s) for s, p in enumerate(V[:, -1] * self.T[-1])])[1]
+        return self.backtrace([], best, B, T - 1)
 
     def semisupervised_train(self, data, S):
-        '''The Baum-Welch algorithm (forward-backward algorithm).
+        '''Learning: the Baum-Welch algorithm (forward-backward algorithm).
            First store all necessary expected counts in relative tables in E-step,
            then maximize the relative probabilities in M-step.
            
@@ -159,4 +162,4 @@ class HMM():
         '''If the data likelihood stops changing, stop iteration.'''
         if new > old: self.tie = 0
         if new == old: self.tie += 1
-        return self.tie == 3
+        return self.tie == 3 
